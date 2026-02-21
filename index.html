@@ -94,4 +94,110 @@
 
         .total-amount { font-size: 2.2rem; color: var(--secondary); font-weight: 800; margin: 10px 0; }
 
-        .table-container {
+        .table-container { margin-top: 30px; display: none; overflow-x: auto; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            text-align: left;
+            background: white;
+        }
+        
+        th { background: #f1f5f9; padding: 15px; border-bottom: 2px solid #e2e8f0; color: #475569; }
+        td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: #f8fafc; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>💰 Renters Rente-kalkulator</h1>
+    
+    <div class="input-grid">
+        <div>
+            <label>Startbeløp (kr)</label>
+            <input type="text" id="principal" placeholder="F.eks. 10000">
+        </div>
+        <div>
+            <label>Månedlig sparing (kr)</label>
+            <input type="text" id="monthly" placeholder="F.eks. 1000">
+        </div>
+        <div>
+            <label>Årlig rente (%)</label>
+            <input type="text" id="rate" placeholder="F.eks. 5.5">
+        </div>
+        <div>
+            <label>Antall år</label>
+            <input type="number" id="years" placeholder="F.eks. 10">
+        </div>
+    </div>
+
+    <button onclick="calculate()">Beregn fremtidig verdi</button>
+
+    <div id="resultBox" class="result-main">
+        <p style="margin:0; color: #64748b;">Estimert totalverdi:</p>
+        <div id="totalDisplay" class="total-amount">0 kr</div>
+        <p id="profitDisplay" style="font-weight: 600; color: #1e293b;"></p>
+    </div>
+
+    <div id="tableContainer" class="table-container">
+        <h3 style="color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Årlig utvikling</h3>
+        <table id="growthTable">
+            <thead>
+                <tr>
+                    <th>År</th>
+                    <th>Eget innskudd</th>
+                    <th>Total verdi</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const getVal = (id) => parseFloat(document.getElementById(id).value.toString().replace(',', '.')) || 0;
+
+        const P = getVal('principal');
+        const PMT = getVal('monthly');
+        const annualRate = getVal('rate') / 100;
+        const years = parseInt(document.getElementById('years').value) || 0;
+        
+        if (years <= 0) {
+            alert("Vennligst skriv inn antall år.");
+            return;
+        }
+
+        const n = 12; 
+        const r = annualRate / n;
+        
+        let tableHTML = "";
+        let currentTotal = P;
+        let totalInvested = P;
+
+        for (let i = 1; i <= years; i++) {
+            for (let m = 1; m <= 12; m++) {
+                currentTotal = (currentTotal + PMT) * (1 + (annualRate > 0 ? r : 0));
+                totalInvested += PMT;
+            }
+            
+            tableHTML += `<tr>
+                <td>År ${i}</td>
+                <td>${Math.round(totalInvested).toLocaleString('no-NO')} kr</td>
+                <td><strong>${Math.round(currentTotal).toLocaleString('no-NO')} kr</strong></td>
+            </tr>`;
+        }
+
+        document.getElementById('resultBox').style.display = 'block';
+        document.getElementById('tableContainer').style.display = 'block';
+        document.getElementById('totalDisplay').innerText = Math.round(currentTotal).toLocaleString('no-NO') + " kr";
+        document.getElementById('profitDisplay').innerText = `Gevinst fra renter: ${Math.round(currentTotal - totalInvested).toLocaleString('no-NO')} kr`;
+        document.getElementById('tableBody').innerHTML = tableHTML;
+    }
+</script>
+
+</body>
+</html>
